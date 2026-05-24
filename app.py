@@ -50,13 +50,14 @@ try:
             # スプレッドシートの「左から1番目と2番目の列（呼び出しNo.と品名）」を取得
             display_cols = result.columns[:2].tolist()
             
-            # 【今回の修正ポイント】
+            # 【今回の修正ポイント】自動引き伸ばしをオフにし、各列の幅を完全に固定します
             st.dataframe(
                 result[display_cols], 
-                use_container_width=True,
-                hide_index=True,  # ← これで一番左の不要な行番号（0,1,2...）を消去します
+                use_container_width=False,  # ← 自動引き伸ばしを無効化
+                hide_index=True,           # 行番号を非表示
                 column_config={
-                    display_cols[0]: st.column_config.Column(width=100)  # ← これで「呼出しNo.」を5桁がピッタリ入る幅に固定します
+                    display_cols[0]: st.column_config.Column(width=100),  # ← 呼出しNo.を「5桁固定」の幅に指定
+                    display_cols[1]: st.column_config.Column(width=600)   # ← 品名を「ゆったり広め」の幅に固定
                 }
             )
         else:
