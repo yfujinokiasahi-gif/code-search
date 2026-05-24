@@ -10,7 +10,7 @@ st.write("文字を入力すると、自動で絞り込まれます。")
 
 # GoogleスプレッドシートのURL（後であなたのURLに書き換えます）
 # ※デモ用に公開データを入れています
-SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/17zsMWCLzo-xUFg_16WGKSEqpFWCLsRCb82EBiml4BiM/export?format=xlsx"
+SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/17zsMWCLzo-xUFg_16WGKSEqpFWCLsRCb82EBiml4BiM/edit?usp=sharing"
 @st.cache_data(ttl=60) # 60秒間データをキャッシュ（更新を反映しつつ動きを軽くする）
 def load_data():
     # Excel（スプレッドシート）を読み込む
