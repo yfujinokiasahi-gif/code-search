@@ -4,16 +4,28 @@ import pandas as pd
 # 1. ページの設定（横幅を広く設定）
 st.set_page_config(page_title="商品検索アプリ", layout="wide")
 
-# 余白を限界まで削り、スマホでも横並びを強制する設定
+# 画面全体のデザイン調整（CSS）
 st.markdown(
     """
     <style>
+    /* 全体の余白削り */
     .block-container { padding-top: 0.4rem !important; padding-bottom: 0rem !important; padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
     div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
     div[data-testid="element-container"] { margin-bottom: 0rem !important; }
+    
+    /* 検索窓と件数の横並び配置 */
     div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; margin-top: -0.4rem !important; }
-    div[data-testid="column"]:nth-of-type(1) { flex: 3 1 0% !important; }
-    div[data-testid="column"]:nth-of-type(2) { flex: 1.5 1 0% !important; padding-left: 10px !important; }
+    
+    /* 【修正2】検索窓の幅を10文字程度（160ピクセル）にきれいに固定 */
+    div[data-testid="column"]:nth-of-type(1) { max-width: 160px !important; flex: 1 1 160px !important; }
+    /* 件数は検索窓のすぐ右側に配置 */
+    div[data-testid="column"]:nth-of-type(2) { flex: 1 1 auto !important; padding-left: 8px !important; }
+
+    /* 【修正1】文字と記入枠の間に少し隙間（10ピクセル）を空ける設定 */
+    h4 { margin-bottom: 10px !important; margin-top: 4px !important; }
+
+    /* 【修正3】表の右上に出るツールバー（ダウンロードや虫眼鏡などのアイコン）を完全に消す */
+    div[data-testid="stDataFrameToolbar"] { display: none !important; }
     </style>
     """,
     unsafe_allow_html=True
@@ -40,9 +52,9 @@ try:
     df = get_data()
     st.markdown("#### **ここに「品名」を入力**")
     
-    col1, col2 = st.columns([3, 1.5])
+    col1, col2 = st.columns([1, 1])
     with col1:
-        query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご、すいか、など...")
+        query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご、など...")
 
     if query:
         query_hira = kata_to_hira(query)
@@ -61,14 +73,5 @@ try:
             
             display_cols = result.columns[:2].tolist()
             
-            # 【対策】コピペで絶対に切れないよう、表の表示設定をすべて1行にドッキングしました
             w_config = {display_cols[0]: st.column_config.Column(width=100), display_cols[1]: st.column_config.Column(width=600)}
-            st.dataframe(result[display_cols], use_container_width=False, hide_index=True, column_config=w_config)
-        else:
-            with col2:
-                st.markdown("<p style='color: #cf222e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>0件</p>", unsafe_allow_html=True)
-    else:
-        st.info("上の検索窓に品名を入力すると、ここに結果が表示されます。")
-
-except Exception as e:
-    st.error(f"データの読み込みに失敗しました。再読み込みしてください。 (詳細: {e})")
+            st.dataframe(result[display_cols], use_
