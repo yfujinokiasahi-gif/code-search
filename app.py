@@ -10,7 +10,7 @@ st.markdown("""
     /* 1. ヘッダーとメニューを完全に非表示 */
     header[data-testid="stHeader"], #MainMenu, footer {display: none !important;}
     
-    /* 2. スマホ画面の横揺れ防止 */
+    /* 2. スマホ画面に100%フィット（横揺れ・右の余白を完全に防止） */
     .block-container {
         width: 100% !important;
         max-width: 100% !important;
@@ -26,39 +26,15 @@ st.markdown("""
         margin-bottom: 0.5rem !important;
     }
 
-    /* 4. 検索窓とヒット件数の横並び設定（隣に配置） */
-    div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        width: 100% !important;
-        gap: 15px !important; /* 検索窓と件数の間のスペース */
-        margin-bottom: 10px !important;
-    }
+    /* 4. 検索窓と件数は「縦並び（標準）」に戻すため、横並び強制のCSSは削除 */
     
-    /* カラム1（検索窓）：短めに設定（全体の50%程度） */
-    div[data-testid="column"]:nth-of-type(1) { 
-        width: 50% !important; 
-        flex: 0 0 50% !important; 
-        min-width: 0 !important; 
-    }
-    
-    /* カラム2（件数表示）：検索窓のすぐ右隣に配置 */
-    div[data-testid="column"]:nth-of-type(2) { 
-        width: auto !important; 
-        flex: 1 1 auto !important; 
-        text-align: left !important; /* 左寄せにして検索窓に近づける */
-        white-space: nowrap !important; /* 折り返し防止 */
-        min-width: 0 !important; 
-    }
-
     /* 件数のテキストデザイン */
     .hit-count {
         color: #2da44e;
         font-size: 16px;
         font-weight: bold;
-        margin: 0;
+        margin-top: 5px;
+        margin-bottom: 10px;
     }
 
     /* 5. 表の余計な機能（拡大アイコン等）を消す */
@@ -85,11 +61,8 @@ def kata_to_hira(text): return "".join([chr(ord(c) - 96) if "ァ" <= c <= "ン" 
 try:
     df = get_data()
     
-    # st.columnsで枠を作成
-    col1, col2 = st.columns([1, 1]) # Python側の比率設定（CSSが優先）
-    with col1:
-        # Enterキーで検索が実行されるのは Streamlit の標準仕様
-        query = st.text_input("検索", label_visibility="collapsed", placeholder="例: いちご")
+    # 横並びのカラム（st.columns）をやめ、シンプルに上から順に配置
+    query = st.text_input("検索", label_visibility="collapsed", placeholder="品名を入力 (例: いちご)")
 
     if query:
         qh = kata_to_hira(query); qk = hira_to_kata(query)
@@ -99,14 +72,13 @@ try:
         
         res = df[df.apply(match, axis=1)]
         
-        # 検索窓の右隣に件数を表示
-        with col2:
-            st.markdown(f'<p class="hit-count">{len(res)}件</p>', unsafe_allow_html=True)
+        # 検索窓の「下」に件数を表示（確実に全文字表示されます）
+        st.markdown(f'<p class="hit-count">{len(res)}件</p>', unsafe_allow_html=True)
         
         if not res.empty:
             cols = res.columns[:2].tolist()
             
-            # 呼出しNo.の列幅を固定（前回のご要望通り 50px）
+            # 呼出しNo.の列幅を狭く（50px）固定する設定は継続
             col_config = {
                 cols[0]: st.column_config.Column(width=50), 
                 cols[1]: st.column_config.Column(width="large")
@@ -114,9 +86,6 @@ try:
             
             st.dataframe(res[cols], use_container_width=True, hide_index=True, column_config=col_config)
         else:
-            with col2:
-                # 0件の場合も表示を揃える
-                st.markdown('<p class="hit-count" style="color: #cf222e;">0件</p>', unsafe_allow_html=True)
             st.error("見つかりませんでした")
     else:
         st.info("文字を入力してEnterを押してください")
