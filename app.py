@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
+import re
 
 # 1. ページの設定（横幅を広く設定）
 st.set_page_config(page_title="商品検索アプリ", layout="wide")
 
-# タイトルのみを表示（説明文は削除）
-st.title("🔍 商品検索アプリ")
+# タイトル（文字サイズを少し小さく調整しました）
+st.markdown("### **🔍 商品検索アプリ**")
 
 # 正しいスプレッドシートのURL
 url = "https://docs.google.com/spreadsheets/d/17zsMWCLzo-xUFg_16WGKSEqpFWCLsRCb82EBiml4BiM/export?format=xlsx"
@@ -14,20 +15,35 @@ url = "https://docs.google.com/spreadsheets/d/17zsMWCLzo-xUFg_16WGKSEqpFWCLsRCb8
 def get_data():
     return pd.read_excel(url)
 
+# ひらがな ⇔ カタカナの変換関数（検索の区別をなくすための道具）
+def hira_to_kata(text):
+    return "".join([chr(ord(c) + 96) if "ぁ" <= c <= "ん" else c for c in text])
+
+def kata_to_hira(text):
+    return "".join([chr(ord(c) - 96) if "ァ" <= c <= "ン" else c for c in text])
+
 try:
     # データの読み込み
     df = get_data()
     
-    # 2. 検索窓のタイトル部分を、文字サイズ最大（## マーク）で大きく表示します
-    st.markdown("## **ここに「品名」を入力**")
+    # 2. 検索窓のタイトル部分（文字サイズを前回より2ポイント小さく調整）
+    st.markdown("#### **ここに「品名」を入力**")
     query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご、すいか、など...")
 
     st.markdown("---")
 
     # 3 & 4. 検索処理と表示の制限
     if query:
-        # すべての列を対象に検索
-        mask = df.astype(str).apply(lambda x: x.str.contains(query, case=False)).any(axis=1)
+        # 入力された文字のひらがな版・カタカナ版を両方用意する
+        query_hira = kata_to_hira(query)
+        query_kata = hira_to_kata(query)
+        
+        # ひらがな、またはカタカナのどちらかが含まれていればマッチさせる判定（大文字小文字も区別しない）
+        def match_row(row):
+            row_str = " ".join(row.astype(str))
+            return (query_hira in kata_to_hira(row_str)) or (query_kata in hira_to_kata(row_str))
+
+        mask = df.apply(match_row, axis=1)
         result = df[mask]
         
         if not result.empty:
