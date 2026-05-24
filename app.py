@@ -1,31 +1,36 @@
 import streamlit as st
 import pandas as pd
 
-# 1. ページの設定（横幅を広く設定）
-st.set_page_config(page_title="商品検索アプリ", layout="wide")
+# 【修正2】レイアウトを "centered" に変更し、全体をコンパクトにする
+st.set_page_config(page_title="商品検索アプリ", layout="centered")
 
 # 画面全体のデザイン調整（CSS）
 st.markdown(
     """
     <style>
-    /* 全体の余白削り */
-    .block-container { padding-top: 0.4rem !important; padding-bottom: 0rem !important; padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
-    div[data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+    /* 【修正1 & 2】サイト全体の幅を狭く固定（約350px）。これで検索窓が10文字程度の幅になります */
+    .block-container { 
+        max-width: 350px !important; 
+        padding-top: 2rem !important; 
+        padding-bottom: 0rem !important; 
+        padding-left: 1rem !important; 
+        padding-right: 1rem !important; 
+    }
+    
+    div[data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
     div[data-testid="element-container"] { margin-bottom: 0rem !important; }
     
-    /* 検索窓と件数の横並び配置 */
-    div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; margin-top: -0.4rem !important; }
+    /* 検索窓と件数の縦のズレを揃える */
+    div[data-testid="stHorizontalBlock"] { 
+        align-items: center !important; 
+    }
     
-    /* 【修正1】検索窓の幅を完全に「100ピクセル」に固定 */
-    div[data-testid="column"]:nth-of-type(1) { max-width: 100px !important; flex: 1 1 100px !important; }
-    /* 件数は検索窓のすぐ右側に配置 */
-    div[data-testid="column"]:nth-of-type(2) { flex: 1 1 auto !important; padding-left: 8px !important; }
-
-    /* 文字と記入枠の間の隙間 */
     h4 { margin-bottom: 10px !important; margin-top: 4px !important; }
 
-    /* 表の右上に出るツールバー（アイコン）を非表示 */
-    div[data-testid="stDataFrameToolbar"] { display: none !important; }
+    /* 【修正4】表の右上に出るツールバー（ダウンロードや拡大アイコン）を非表示にする */
+    [data-testid="stElementToolbar"] { 
+        display: none !important; 
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -52,7 +57,8 @@ try:
     df = get_data()
     st.markdown("#### **ここに「品名」を入力**")
     
-    col1, col2 = st.columns([1, 1])
+    # 検索窓と件数の横幅の割合を設定（3:1の比率）
+    col1, col2 = st.columns([3, 1])
     with col1:
         query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご...")
 
@@ -73,10 +79,8 @@ try:
             
             display_cols = result.columns[:2].tolist()
             
-            w_config = {display_cols[0]: st.column_config.Column(width=100), display_cols[1]: st.column_config.Column(width=600)}
-            
-            # 【修正2】表全体の幅（width）を100ピクセルに指定して、検索窓とサイズを完全に合わせました
-            st.dataframe(result[display_cols], width=100, use_container_width=False, hide_index=True, column_config=w_config)
+            # 【修正3】use_container_width=True に変更し、表の幅を検索窓（コンテナ）の幅にぴったり合わせる
+            st.dataframe(result[display_cols], use_container_width=True, hide_index=True)
         else:
             with col2:
                 st.markdown("<p style='color: #cf222e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>0件</p>", unsafe_allow_html=True)
