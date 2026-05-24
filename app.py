@@ -26,45 +26,39 @@ st.markdown("""
         margin-bottom: 0.5rem !important;
     }
 
-    /* 4. ★修正部分★ 検索窓コンテナ全体を「約5文字分（160px）」まで縮める */
+    /* 4. 検索窓とヒット件数の横並び設定（隣に配置） */
     div[data-testid="stHorizontalBlock"] {
-        position: relative !important;
-        width: 160px !important; /* 全体の幅をガッツリ短く固定 */
         display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
         align-items: center !important;
+        width: 100% !important;
+        gap: 15px !important; /* 検索窓と件数の間のスペース */
         margin-bottom: 10px !important;
     }
     
-    /* カラム1（検索窓本体）：160pxの枠内でいっぱいまで広げる */
+    /* カラム1（検索窓）：短めに設定（全体の50%程度） */
     div[data-testid="column"]:nth-of-type(1) { 
-        width: 100% !important; 
-        flex: 1 1 100% !important; 
+        width: 50% !important; 
+        flex: 0 0 50% !important; 
         min-width: 0 !important; 
     }
     
-    /* ★修正部分★ カラム2（件数）：検索窓の「内側（右端）」に絶対配置で重ねる */
+    /* カラム2（件数表示）：検索窓のすぐ右隣に配置 */
     div[data-testid="column"]:nth-of-type(2) { 
-        position: absolute !important;
-        right: 12px !important; /* 検索窓の右枠から少し内側に配置 */
-        top: 50% !important;
-        transform: translateY(-50%) !important;
         width: auto !important; 
-        z-index: 10 !important;
-        pointer-events: none !important; /* タップの邪魔をしない */
+        flex: 1 1 auto !important; 
+        text-align: left !important; /* 左寄せにして検索窓に近づける */
+        white-space: nowrap !important; /* 折り返し防止 */
+        min-width: 0 !important; 
     }
 
-    /* 検索文字が「件数」に被らないよう、入力欄の右側に余白(padding)を設ける */
-    div[data-baseweb="input"] input {
-        padding-right: 45px !important;
-    }
-
-    /* 件数のテキストデザイン（入力欄に馴染むよう少し小さく・グレーに） */
+    /* 件数のテキストデザイン */
     .hit-count {
-        color: #64748b;
-        font-size: 14px;
+        color: #2da44e;
+        font-size: 16px;
         font-weight: bold;
         margin: 0;
-        white-space: nowrap;
     }
 
     /* 5. 表の余計な機能（拡大アイコン等）を消す */
@@ -91,9 +85,10 @@ def kata_to_hira(text): return "".join([chr(ord(c) - 96) if "ァ" <= c <= "ン" 
 try:
     df = get_data()
     
-    # st.columnsで枠を作り、CSSで重ね合わせる
-    col1, col2 = st.columns(2) 
+    # st.columnsで枠を作成
+    col1, col2 = st.columns([1, 1]) # Python側の比率設定（CSSが優先）
     with col1:
+        # Enterキーで検索が実行されるのは Streamlit の標準仕様
         query = st.text_input("検索", label_visibility="collapsed", placeholder="例: いちご")
 
     if query:
@@ -104,14 +99,14 @@ try:
         
         res = df[df.apply(match, axis=1)]
         
-        # 内側にめり込ませる「件数」の表示
+        # 検索窓の右隣に件数を表示
         with col2:
             st.markdown(f'<p class="hit-count">{len(res)}件</p>', unsafe_allow_html=True)
         
         if not res.empty:
             cols = res.columns[:2].tolist()
             
-            # ★修正部分★：呼出しNo.の列幅をさらに半分(50ピクセル)に縮小して固定
+            # 呼出しNo.の列幅を固定（前回のご要望通り 50px）
             col_config = {
                 cols[0]: st.column_config.Column(width=50), 
                 cols[1]: st.column_config.Column(width="large")
@@ -119,9 +114,12 @@ try:
             
             st.dataframe(res[cols], use_container_width=True, hide_index=True, column_config=col_config)
         else:
+            with col2:
+                # 0件の場合も表示を揃える
+                st.markdown('<p class="hit-count" style="color: #cf222e;">0件</p>', unsafe_allow_html=True)
             st.error("見つかりませんでした")
     else:
-        st.info("入力を待機中...")
+        st.info("文字を入力してEnterを押してください")
 
 except Exception as e:
     st.error("データの読み込みに失敗しました")
