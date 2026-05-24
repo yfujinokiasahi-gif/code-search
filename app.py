@@ -79,3 +79,35 @@ try:
     # Python側でも比率を6:4に合わせる
     col1, col2 = st.columns([6, 4]) 
     with col1:
+        query = st.text_input("検索", label_visibility="collapsed", placeholder="品名を入力 (例: いちご)")
+
+    if query:
+        qh = kata_to_hira(query); qk = hira_to_kata(query)
+        def match(row):
+            s = " ".join(map(str, row))
+            return (qh in kata_to_hira(s)) or (qk in hira_to_kata(s))
+        
+        res = df[df.apply(match, axis=1)]
+        
+        # 件数の表示
+        with col2:
+            st.markdown(f"**{len(res)}** 件", unsafe_allow_html=True)
+        
+        if not res.empty:
+            cols = res.columns[:2].tolist()
+            
+            # ★修正部分★：表の列幅を個別に設定
+            # 1列目（呼出しNo.）を80ピクセル程度に固定、2列目（品名）は大きく広げる
+            col_config = {
+                cols[0]: st.column_config.Column(width=80), 
+                cols[1]: st.column_config.Column(width="large")
+            }
+            
+            st.dataframe(res[cols], use_container_width=True, hide_index=True, column_config=col_config)
+        else:
+            st.error("見つかりませんでした")
+    else:
+        st.info("入力を待機中...")
+
+except Exception as e:
+    st.error("データの読み込みに失敗しました")
