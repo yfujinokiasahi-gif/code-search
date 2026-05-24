@@ -10,7 +10,7 @@ st.markdown("""
     /* 1. ヘッダーとメニューを完全に非表示 */
     header[data-testid="stHeader"], #MainMenu, footer {display: none !important;}
     
-    /* 2. スマホ画面に100%フィット（横揺れ防止） */
+    /* 2. スマホ画面の横揺れ防止 */
     .block-container {
         width: 100% !important;
         max-width: 100% !important;
@@ -26,36 +26,51 @@ st.markdown("""
         margin-bottom: 0.5rem !important;
     }
 
-    /* 4. 検索窓とヒット件数の横並び設定（★比率を完全に固定★） */
+    /* 4. ★修正部分★ 検索窓コンテナ全体を「約5文字分（160px）」まで縮める */
     div[data-testid="stHorizontalBlock"] {
+        position: relative !important;
+        width: 160px !important; /* 全体の幅をガッツリ短く固定 */
         display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
         align-items: center !important;
-        width: 100% !important;
-        gap: 5px !important;
+        margin-bottom: 10px !important;
     }
     
-    /* ★修正部分★：検索窓（左側）を画面幅の60%に短く固定 */
+    /* カラム1（検索窓本体）：160pxの枠内でいっぱいまで広げる */
     div[data-testid="column"]:nth-of-type(1) { 
-        width: 60% !important; 
-        flex: 0 0 60% !important; 
+        width: 100% !important; 
+        flex: 1 1 100% !important; 
         min-width: 0 !important; 
     }
     
-    /* ★修正部分★：件数表示（右側）のスペースを40%確保し、絶対に見切れないようにする */
+    /* ★修正部分★ カラム2（件数）：検索窓の「内側（右端）」に絶対配置で重ねる */
     div[data-testid="column"]:nth-of-type(2) { 
-        width: 40% !important; 
-        flex: 0 0 40% !important; 
-        text-align: right !important;
-        white-space: nowrap !important;
-        min-width: 0 !important; 
+        position: absolute !important;
+        right: 12px !important; /* 検索窓の右枠から少し内側に配置 */
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: auto !important; 
+        z-index: 10 !important;
+        pointer-events: none !important; /* タップの邪魔をしない */
     }
 
-    /* 5. 表の余計な機能（拡大・ダウンロードアイコン）を消す */
+    /* 検索文字が「件数」に被らないよう、入力欄の右側に余白(padding)を設ける */
+    div[data-baseweb="input"] input {
+        padding-right: 45px !important;
+    }
+
+    /* 件数のテキストデザイン（入力欄に馴染むよう少し小さく・グレーに） */
+    .hit-count {
+        color: #64748b;
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    /* 5. 表の余計な機能（拡大アイコン等）を消す */
     [data-testid="stElementToolbar"] { display: none !important; }
 
-    /* 6. 表全体の幅を画面に合わせる */
+    /* 6. 表の幅を画面に合わせる */
     [data-testid="stDataFrame"] { width: 100% !important; }
     </style>
 """, unsafe_allow_html=True)
@@ -76,10 +91,10 @@ def kata_to_hira(text): return "".join([chr(ord(c) - 96) if "ァ" <= c <= "ン" 
 try:
     df = get_data()
     
-    # Python側でも比率を6:4に合わせる
-    col1, col2 = st.columns([6, 4]) 
+    # st.columnsで枠を作り、CSSで重ね合わせる
+    col1, col2 = st.columns(2) 
     with col1:
-        query = st.text_input("検索", label_visibility="collapsed", placeholder="品名を入力 (例: いちご)")
+        query = st.text_input("検索", label_visibility="collapsed", placeholder="例: いちご")
 
     if query:
         qh = kata_to_hira(query); qk = hira_to_kata(query)
@@ -89,17 +104,16 @@ try:
         
         res = df[df.apply(match, axis=1)]
         
-        # 件数の表示
+        # 内側にめり込ませる「件数」の表示
         with col2:
-            st.markdown(f"**{len(res)}** 件", unsafe_allow_html=True)
+            st.markdown(f'<p class="hit-count">{len(res)}件</p>', unsafe_allow_html=True)
         
         if not res.empty:
             cols = res.columns[:2].tolist()
             
-            # ★修正部分★：表の列幅を個別に設定
-            # 1列目（呼出しNo.）を80ピクセル程度に固定、2列目（品名）は大きく広げる
+            # ★修正部分★：呼出しNo.の列幅をさらに半分(50ピクセル)に縮小して固定
             col_config = {
-                cols[0]: st.column_config.Column(width=80), 
+                cols[0]: st.column_config.Column(width=50), 
                 cols[1]: st.column_config.Column(width="large")
             }
             
