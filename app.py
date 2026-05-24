@@ -10,12 +10,12 @@ st.markdown("""
     /* 1. ヘッダーとメニューを完全に非表示 */
     header[data-testid="stHeader"], #MainMenu, footer {display: none !important;}
     
-    /* 2. スマホ画面に100%フィットさせ、右側の謎の余白（横揺れ）を完全に防止 */
+    /* 2. スマホ画面に100%フィット（横揺れ防止） */
     .block-container {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 2rem 1rem 1rem 1rem !important; /* 上 右 下 左 の余白 */
-        overflow-x: hidden !important; /* ★右側の余白を消す特効薬★ */
+        padding: 2rem 1rem 1rem 1rem !important;
+        overflow-x: hidden !important; 
     }
 
     /* 3. アプリタイトル */
@@ -26,29 +26,30 @@ st.markdown("""
         margin-bottom: 0.5rem !important;
     }
 
-    /* 4. 検索窓とヒット件数を絶対に横並びにしつつ、画面内に収める */
+    /* 4. 検索窓とヒット件数の横並び設定 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
         width: 100% !important;
+        gap: 10px !important; /* 検索窓と件数の間の隙間 */
     }
     
-    /* 検索窓（左側） */
+    /* ★修正部分★：検索窓（左側） */
     div[data-testid="column"]:nth-of-type(1) { 
-        width: 75% !important; 
-        flex: 1 1 auto !important; 
-        min-width: 0 !important; /* ★中身が画面外に押し出されるのを防ぐ★ */
+        width: auto !important; 
+        flex: 1 1 auto !important; /* 右側の件数に合わせて自動で縮む */
+        min-width: 0 !important; 
     }
     
-    /* 件数表示（右側） */
+    /* ★修正部分★：件数表示（右側） */
     div[data-testid="column"]:nth-of-type(2) { 
-        width: 25% !important; 
-        flex: 0 0 auto !important; 
+        width: auto !important; 
+        flex: 0 0 auto !important; /* 文字数に必要な分だけ幅を確保する */
         text-align: right !important;
-        padding-left: 10px !important;
-        min-width: 0 !important; /* ★中身が画面外に押し出されるのを防ぐ★ */
+        white-space: nowrap !important; /* 絶対に文字を折り返さない・切らさない */
+        min-width: 0 !important; 
     }
 
     /* 5. 表の余計な機能（拡大・ダウンロードアイコン）を消す */
@@ -76,7 +77,7 @@ try:
     df = get_data()
     
     # 検索窓と件数の表示エリア
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([4, 1]) # Python側の比率設定（CSSが優先されるため目安です）
     with col1:
         query = st.text_input("検索", label_visibility="collapsed", placeholder="品名を入力 (例：いちご)")
 
