@@ -74,4 +74,12 @@ try:
             display_cols = result.columns[:2].tolist()
             
             w_config = {display_cols[0]: st.column_config.Column(width=100), display_cols[1]: st.column_config.Column(width=600)}
-            st.dataframe(result[display_cols], use_
+            st.dataframe(result[display_cols], use_container_width=False, hide_index=True, column_config=w_config)
+        else:
+            with col2:
+                st.markdown("<p style='color: #cf222e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>0件</p>", unsafe_allow_html=True)
+    else:
+        st.info("上の検索窓に品名を入力すると、ここに結果が表示されます。")
+
+except Exception as e:
+    st.error(f"データの読み込みに失敗しました。再読み込みしてください。 (詳細: {e})")
