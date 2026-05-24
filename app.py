@@ -42,4 +42,4 @@ try:
         st.dataframe(df, use_container_width=True)
 
 except Exception as e:
-    st.error("データの読み込みに失敗しました。URL
+    st.error("データの読み込みに失敗しました。URLが正しいか確認してください。")
