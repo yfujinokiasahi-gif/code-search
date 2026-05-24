@@ -4,7 +4,7 @@ import pandas as pd
 # 1. ページの設定（横幅を広く設定）
 st.set_page_config(page_title="商品検索アプリ", layout="wide")
 
-# タイトル（サイズ微調整済み）
+# タイトル
 st.markdown("### **🔍 商品検索アプリ**")
 
 # 正しいスプレッドシートのURL
@@ -25,7 +25,7 @@ try:
     # データの読み込み
     df = get_data()
     
-    # 2. 検索窓のタイトル部分（サイズ微調整済み）
+    # 2. 検索窓のタイトル部分
     st.markdown("#### **ここに「品名」を入力**")
     query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご、すいか、など...")
 
@@ -37,9 +37,7 @@ try:
         query_hira = kata_to_hira(query)
         query_kata = hira_to_kata(query)
         
-        # 行全体のデータを確実に文字列に変換して検索する処理（エラー回避対策）
         def match_row(row):
-            # 空欄や数字があっても、すべて確実に文字(str)に変換して結合します
             row_str = " ".join([str(x) for x in row])
             return (query_hira in kata_to_hira(row_str)) or (query_kata in hira_to_kata(row_str))
 
@@ -49,11 +47,18 @@ try:
         if not result.empty:
             st.success(f"{len(result)} 件見つかりました。")
             
-            # スプレッドシートの「左から1番目と2番目の列」だけを取得
+            # スプレッドシートの「左から1番目と2番目の列（呼び出しNo.と品名）」を取得
             display_cols = result.columns[:2].tolist()
             
-            # 2列だけに絞り込んだ表を大きく表示
-            st.dataframe(result[display_cols], use_container_width=True)
+            # 【今回の修正ポイント】
+            st.dataframe(
+                result[display_cols], 
+                use_container_width=True,
+                hide_index=True,  # ← これで一番左の不要な行番号（0,1,2...）を消去します
+                column_config={
+                    display_cols[0]: st.column_config.Column(width=100)  # ← これで「呼出しNo.」を5桁がピッタリ入る幅に固定します
+                }
+            )
         else:
             st.warning("一致する商品が見つかりませんでした。違うキーワードを試してください。")
     else:
