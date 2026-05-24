@@ -4,7 +4,7 @@ import pandas as pd
 # 1. ページの設定（横幅を広く設定）
 st.set_page_config(page_title="商品検索アプリ", layout="wide")
 
-# 【今回の目玉】余白を限界まで削り、スマホでも横並びを強制する魔法の設定
+# 余白を限界まで削り、スマホでも横並びを強制する魔法の設定
 st.markdown(
     """
     <style>
@@ -86,9 +86,12 @@ try:
         result = df[mask]
         
         if not result.empty:
-            # 【変更点】大きな緑枠（st.success）をやめ、検索窓のすぐ右側（col2）に、小さく綺麗な緑文字で件数を表示
+            # コピペで切れないように細かく改行して記述しました
             with col2:
-                st.markdown(f"<p style='color: #2da44e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>{len(result)}件見つかりました。</p>", unsafe_allow_index=True)
+                st.markdown(
+                    f"<p style='color: #2da44e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>{len(result)}件</p>", 
+                    unsafe_allow_index=True
+                )
             
             # スプレッドシートの「左から1番目と2番目の列（呼び出しNo.と品名）」を取得
             display_cols = result.columns[:2].tolist()
@@ -105,4 +108,13 @@ try:
             )
         else:
             with col2:
-                st.markdown("<p style='color: #cf222e; font-weight: bold; font-size:
+                st.markdown(
+                    "<p style='color: #cf222e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>0件</p>", 
+                    unsafe_allow_index=True
+                )
+    else:
+        # 4. 検索前は何も表示しない
+        st.info("上の検索窓に品名を入力すると、ここに結果が表示されます。")
+
+except Exception as e:
+    st.error(f"データの読み込みに失敗しました。時間をおいてページを再読み込みしてください。 (詳細: {e})")
