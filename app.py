@@ -16,15 +16,15 @@ st.markdown(
     /* 検索窓と件数の横並び配置 */
     div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; margin-top: -0.4rem !important; }
     
-    /* 【修正2】検索窓の幅を10文字程度（160ピクセル）にきれいに固定 */
-    div[data-testid="column"]:nth-of-type(1) { max-width: 160px !important; flex: 1 1 160px !important; }
+    /* 【修正1】検索窓の幅を完全に「100ピクセル」に固定 */
+    div[data-testid="column"]:nth-of-type(1) { max-width: 100px !important; flex: 1 1 100px !important; }
     /* 件数は検索窓のすぐ右側に配置 */
     div[data-testid="column"]:nth-of-type(2) { flex: 1 1 auto !important; padding-left: 8px !important; }
 
-    /* 【修正1】文字と記入枠の間に少し隙間（10ピクセル）を空ける設定 */
+    /* 文字と記入枠の間の隙間 */
     h4 { margin-bottom: 10px !important; margin-top: 4px !important; }
 
-    /* 【修正3】表の右上に出るツールバー（ダウンロードや虫眼鏡などのアイコン）を完全に消す */
+    /* 表の右上に出るツールバー（アイコン）を非表示 */
     div[data-testid="stDataFrameToolbar"] { display: none !important; }
     </style>
     """,
@@ -54,7 +54,7 @@ try:
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご、など...")
+        query = st.text_input(label="検索窓", label_visibility="collapsed", key="search", placeholder="いちご...")
 
     if query:
         query_hira = kata_to_hira(query)
@@ -74,7 +74,9 @@ try:
             display_cols = result.columns[:2].tolist()
             
             w_config = {display_cols[0]: st.column_config.Column(width=100), display_cols[1]: st.column_config.Column(width=600)}
-            st.dataframe(result[display_cols], use_container_width=False, hide_index=True, column_config=w_config)
+            
+            # 【修正2】表全体の幅（width）を100ピクセルに指定して、検索窓とサイズを完全に合わせました
+            st.dataframe(result[display_cols], width=100, use_container_width=False, hide_index=True, column_config=w_config)
         else:
             with col2:
                 st.markdown("<p style='color: #cf222e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>0件</p>", unsafe_allow_html=True)
