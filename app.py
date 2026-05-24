@@ -4,7 +4,7 @@ import pandas as pd
 # 1. ページの設定（横幅を広く設定）
 st.set_page_config(page_title="商品検索アプリ", layout="wide")
 
-# 余白を限界まで削り、スマホでも横並びを強制する魔法の設定
+# 余白を限界まで削り、スマホでも横並びを強制する設定
 st.markdown(
     """
     <style>
@@ -39,7 +39,7 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_index=True
+    unsafe_allow_html=True  # ← ここを正しい記述に修正しました
 )
 
 # タイトル
@@ -86,11 +86,10 @@ try:
         result = df[mask]
         
         if not result.empty:
-            # コピペで切れないように細かく改行して記述しました
             with col2:
                 st.markdown(
                     f"<p style='color: #2da44e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>{len(result)}件</p>", 
-                    unsafe_allow_index=True
+                    unsafe_allow_html=True  # ← 正しい記述に修正
                 )
             
             # スプレッドシートの「左から1番目と2番目の列（呼び出しNo.と品名）」を取得
@@ -98,23 +97,4 @@ try:
             
             # 2列だけに絞り込んだ表を表示
             st.dataframe(
-                result[display_cols], 
-                use_container_width=False,  # 自動引き伸ばしを無効化
-                hide_index=True,           # 行番号を非表示
-                column_config={
-                    display_cols[0]: st.column_config.Column(width=100),  # 呼出しNo.を「5桁固定」の幅に指定
-                    display_cols[1]: st.column_config.Column(width=600)   # 品名を「ゆったり広め」の幅に固定
-                }
-            )
-        else:
-            with col2:
-                st.markdown(
-                    "<p style='color: #cf222e; font-weight: bold; font-size: 15px; margin: 0; white-space: nowrap;'>0件</p>", 
-                    unsafe_allow_index=True
-                )
-    else:
-        # 4. 検索前は何も表示しない
-        st.info("上の検索窓に品名を入力すると、ここに結果が表示されます。")
-
-except Exception as e:
-    st.error(f"データの読み込みに失敗しました。時間をおいてページを再読み込みしてください。 (詳細: {e})")
+                result
