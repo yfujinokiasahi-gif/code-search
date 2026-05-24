@@ -14,7 +14,7 @@ st.markdown("""
     .block-container {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 2rem 1rem 1rem 1rem !important;
+        padding: 1.5rem 1rem 1rem 1rem !important;
         overflow-x: hidden !important; 
     }
 
@@ -26,36 +26,36 @@ st.markdown("""
         margin-bottom: 0.5rem !important;
     }
 
-    /* 4. 検索窓とヒット件数の横並び設定 */
+    /* 4. 検索窓とヒット件数の横並び設定（★比率を完全に固定★） */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
         width: 100% !important;
-        gap: 10px !important; /* 検索窓と件数の間の隙間 */
+        gap: 5px !important;
     }
     
-    /* ★修正部分★：検索窓（左側） */
+    /* ★修正部分★：検索窓（左側）を画面幅の60%に短く固定 */
     div[data-testid="column"]:nth-of-type(1) { 
-        width: auto !important; 
-        flex: 1 1 auto !important; /* 右側の件数に合わせて自動で縮む */
+        width: 60% !important; 
+        flex: 0 0 60% !important; 
         min-width: 0 !important; 
     }
     
-    /* ★修正部分★：件数表示（右側） */
+    /* ★修正部分★：件数表示（右側）のスペースを40%確保し、絶対に見切れないようにする */
     div[data-testid="column"]:nth-of-type(2) { 
-        width: auto !important; 
-        flex: 0 0 auto !important; /* 文字数に必要な分だけ幅を確保する */
+        width: 40% !important; 
+        flex: 0 0 40% !important; 
         text-align: right !important;
-        white-space: nowrap !important; /* 絶対に文字を折り返さない・切らさない */
+        white-space: nowrap !important;
         min-width: 0 !important; 
     }
 
     /* 5. 表の余計な機能（拡大・ダウンロードアイコン）を消す */
     [data-testid="stElementToolbar"] { display: none !important; }
 
-    /* 6. 表の幅を画面に合わせる */
+    /* 6. 表全体の幅を画面に合わせる */
     [data-testid="stDataFrame"] { width: 100% !important; }
     </style>
 """, unsafe_allow_html=True)
@@ -76,31 +76,6 @@ def kata_to_hira(text): return "".join([chr(ord(c) - 96) if "ァ" <= c <= "ン" 
 try:
     df = get_data()
     
-    # 検索窓と件数の表示エリア
-    col1, col2 = st.columns([4, 1]) # Python側の比率設定（CSSが優先されるため目安です）
+    # Python側でも比率を6:4に合わせる
+    col1, col2 = st.columns([6, 4]) 
     with col1:
-        query = st.text_input("検索", label_visibility="collapsed", placeholder="品名を入力 (例：いちご)")
-
-    if query:
-        qh = kata_to_hira(query); qk = hira_to_kata(query)
-        def match(row):
-            s = " ".join(map(str, row))
-            return (qh in kata_to_hira(s)) or (qk in hira_to_kata(s))
-        
-        res = df[df.apply(match, axis=1)]
-        
-        # 件数の表示
-        with col2:
-            st.markdown(f"**{len(res)}** 件", unsafe_allow_html=True)
-        
-        if not res.empty:
-            # 呼び出しNo.と品名の2列だけを表示
-            cols = res.columns[:2].tolist()
-            st.dataframe(res[cols], use_container_width=True, hide_index=True)
-        else:
-            st.error("見つかりませんでした")
-    else:
-        st.info("入力を待機中...")
-
-except Exception as e:
-    st.error("データの読み込みに失敗しました")
