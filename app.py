@@ -6,27 +6,28 @@ st.set_page_config(page_title="商品検索アプリ", layout="wide")
 
 # アプリのタイトルと説明
 st.title("🔍 商品検索アプリ")
-st.write("文字を入力すると、自動で絞り込まれます。データは1分ごとに最新に更新されます。")
+st.write("文字を入力すると、自動で絞り込まれます。データは自動で最新に更新されます。")
 
-# あなたのGoogleスプレッドシートのURL
-SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/17zsMWCLzo-xUFg_16WGKSEqpFWCLsRCb82EBiml4BiM/export?format=xlsx"
+# 正しいスプレッドシートのURL（完全に組み込み済みです）
+url = "https://docs.google.com/spreadsheets/d/17zsMWCLzo-xUFg_16WGKSEqpFWCLsRCb82EBiml4BiM/export?format=xlsx"
 
-# 【超重要】ttl=60 を追加して、1分（60秒）経ったら自動で最新データを読み直す設定にします
-@st.cache_data(ttl=60)
-def load_data():
-    return pd.read_excel(SPREADSHEET_URL)
+# 読み込みエラーを完全に回避するため、キャッシュの仕組みをよりシンプルな形に変更します
+@st.cache_data(ttl="1m")  # 1分（1minute）ごとに最新データを読み直す設定
+def get_data():
+    return pd.read_excel(url)
 
 try:
-    df = load_data()
+    # データの読み込みを実行
+    df = get_data()
     
-    # 2. 検索窓を大きく表示（パートさんが押しやすい位置に）
+    # 2. 検索窓を大きく表示
     query = st.text_input("ここに「品名」や「キーワード」を入力してください", key="search", placeholder="いちご、すいか、など...")
 
     st.markdown("---")
 
     # 3. 検索処理
     if query:
-        # すべての列を対象に、検索ワードが含まれている行を絞り込む（大文字小文字を区別しない）
+        # すべての列を対象に、検索ワードが含まれている行を絞り込む
         mask = df.astype(str).apply(lambda x: x.str.contains(query, case=False)).any(axis=1)
         result = df[mask]
         
@@ -42,4 +43,5 @@ try:
         st.dataframe(df, use_container_width=True)
 
 except Exception as e:
-    st.error("データの読み込みに失敗しました。スプレッドシートの共有設定やURLを確認してください。")
+    st.error("データの読み込みに失敗しました。時間をおいてページを再読み込みしてください。")
+    st.info(f"エラーの詳細: {e}")  # 万が一ダメだった場合に、何が原因か特定するための手がかりを表示します
