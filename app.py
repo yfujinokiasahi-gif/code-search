@@ -104,10 +104,11 @@ try:
                 if not res.empty:
                     cols = res.columns[:2].tolist()
                     
-                    # 1列目の幅を固定（45px）、2列目の表示名を「品名」に変更し大きく表示
+                    # 1列目の幅を極小（45px）に固定。2列目の幅を十分に大きく（1000px）設定することで、
+                    # 横に広がった枠の余白がすべて2列目に割り当てられるよう比率配分をコントロールします。
                     col_config = {
                         cols[0]: st.column_config.Column(width=45), 
-                        cols[1]: st.column_config.Column(label="品名", width="large")
+                        cols[1]: st.column_config.Column(label="品名", width=1000)
                     }
                     
                     # height=550 を指定することで、PCやタブレット表示時にも表が長くスクロールしやすくなります
