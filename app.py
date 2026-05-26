@@ -104,10 +104,10 @@ try:
                 if not res.empty:
                     cols = res.columns[:2].tolist()
                     
-                    # 1列目の幅を極小（45px）に固定。2列目の幅を十分に大きく（1000px）設定することで、
-                    # 横に広がった枠の余白がすべて2列目に割り当てられるよう比率配分をコントロールします。
+                    # 1列目の width を None に指定することで、中身と見出し（呼出No.）に合わせて自動サイズ調整（Autosize）されます。
+                    # 2列目は引き続き width=1000 とすることで、大画面でも残りのスペースがすべて品名に割り当てられます。
                     col_config = {
-                        cols[0]: st.column_config.Column(width=45), 
+                        cols[0]: st.column_config.Column(label="呼出No.", width=None), 
                         cols[1]: st.column_config.Column(label="品名", width=1000)
                     }
                     
