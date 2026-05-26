@@ -104,13 +104,20 @@ try:
                 if not res.empty:
                     cols = res.columns[:2].tolist()
                     
-                    # 「呼び出しNo.」の列幅を必要最低限（45px）でガッチリ固定
+                    # 1列目の幅を固定（45px）、2列目の表示名を「品名」に変更し大きく表示
                     col_config = {
                         cols[0]: st.column_config.Column(width=45), 
-                        cols[1]: st.column_config.Column(width="large")
+                        cols[1]: st.column_config.Column(label="品名", width="large")
                     }
                     
-                    st.dataframe(res[cols], use_container_width=True, hide_index=True, column_config=col_config)
+                    # height=550 を指定することで、PCやタブレット表示時にも表が長くスクロールしやすくなります
+                    st.dataframe(
+                        res[cols], 
+                        use_container_width=True, 
+                        hide_index=True, 
+                        column_config=col_config,
+                        height=550
+                    )
                 else:
                     st.error("見つかりませんでした")
             else:
